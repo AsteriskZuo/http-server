@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use crate::addon::file_server::handler::{make_file_server_handler, FileServerHandler};
 use crate::addon::proxy::handler::make_proxy_handler;
-use crate::addon::proxy::{Proxy, ProxiedTarget};
+use crate::addon::proxy::{Kind, Proxy, Target};
 use crate::Config;
 
 use super::middleware::Middleware;
@@ -20,7 +20,7 @@ pub struct HttpHandler {
 impl HttpHandler {
     pub async fn handle_request(self, request: Request<Body>) -> Result<Response<Body>> {
         // let handler = make_file_server_handler(self.file_explorer);
-        let proxy = Arc::new(Proxy::new(ProxiedTarget::Static(String::from("https://www.httpbin.org/status/301"))));
+        let proxy = Arc::new(Proxy::from());
         let handler = make_proxy_handler(proxy);
         let middleware = Arc::clone(&self.middleware);
         let response = middleware.handle(request, handler).await;

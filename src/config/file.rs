@@ -8,6 +8,7 @@ use std::str::FromStr;
 use super::basic_auth::BasicAuthConfig;
 use super::compression::CompressionConfig;
 use super::cors::CorsConfig;
+use super::proxy::ProxyConfig;
 use super::tls::TlsConfigFile;
 
 #[derive(Debug, Deserialize)]
@@ -22,6 +23,7 @@ pub struct ConfigFile {
     pub cors: Option<CorsConfig>,
     pub compression: Option<CompressionConfig>,
     pub basic_auth: Option<BasicAuthConfig>,
+    pub proxy: Option<ProxyConfig>,
 }
 
 impl ConfigFile {
@@ -63,6 +65,7 @@ mod tests {
     use std::net::Ipv4Addr;
     use std::str::FromStr;
 
+    use crate::addon::proxy;
     use crate::config::util::tls::PrivateKeyAlgorithm;
 
     use super::*;
@@ -273,6 +276,45 @@ mod tests {
         let config = ConfigFile::parse_toml(file_contents).unwrap();
 
         assert!(config.basic_auth.is_some());
+
+        let basic_auth = config.basic_auth.unwrap();
+
+        assert_eq!(basic_auth.username, String::from("johnappleseed"));
+        assert_eq!(basic_auth.password, String::from("john::likes::apples!"));
+    }
+
+    #[test]
+    fn parses_config_with_static_proxy() {
+        let file_contents = r#"
+            host = "0.0.0.0"
+            port = 7878
+
+            [proxy]
+            url = "https://httpbin.org/get"
+            method = "GET"
+            authorization = "Bearer 1234"
+        "#;
+        let config = ConfigFile::parse_toml(file_contents).unwrap();
+
+        assert!(config.proxy.is_some());
+
+        let proxy_config = config.proxy.unwrap();
+
+        assert!(matches!(proxy_config.kind, proxy::Kind::Static(_)));
+    }
+
+    #[test]
+    fn parses_config_with_dynamic_proxy() {
+        let file_contents = r#"
+            host = "0.0.0.0"
+            port = 7878
+
+            [proxy]
+            dynamic = true
+        "#;
+        let config = ConfigFile::parse_toml(file_contents).unwrap();
+
+        assert!(config.proxy.is_some());
 
         let basic_auth = config.basic_auth.unwrap();
 

@@ -51,6 +51,13 @@ pub struct Cli {
     /// Specifies password for basic authentication
     #[structopt(long = "password")]
     pub password: Option<String>,
+    /// Proxy requests to the provided URL.
+    ///
+    /// By providing `--proxy` CLI option, the proxy configuration will be
+    /// `Static` which means that the provided URL will be used to proxy every
+    /// HTTP request and no File Explorer will be available
+    #[structopt(long = "proxy")]
+    pub proxy: Option<String>,
 }
 
 impl Cli {
@@ -75,6 +82,7 @@ impl Default for Cli {
             gzip: false,
             username: None,
             password: None,
+            proxy: None,
         }
     }
 }
@@ -225,6 +233,27 @@ mod tests {
 
         expect.username = None;
         expect.password = Some(String::from("Appleseed"));
+
+        assert_eq!(from_args, expect);
+    }
+
+    #[test]
+    fn with_static_proxy() {
+        let from_args =
+            Cli::from_str_args(vec!["http-server", "--proxy", "https://httpbin.org/get"]);
+        let mut expect = Cli::default();
+
+        expect.proxy = Some(String::from("https://httpbin.org/get"));
+
+        assert_eq!(from_args, expect);
+    }
+
+    #[test]
+    fn with_dynamic_proxy() {
+        let from_args = Cli::from_str_args(vec!["http-server", "--proxy", "dynamic"]);
+        let mut expect = Cli::default();
+
+        expect.proxy = Some(String::from("dynamic"));
 
         assert_eq!(from_args, expect);
     }

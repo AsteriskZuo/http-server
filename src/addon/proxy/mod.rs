@@ -4,6 +4,7 @@ use http::header::{HeaderName, HeaderValue};
 use http::response::Builder as HttpResponseBuilder;
 use http::{Request, Response};
 use hyper::{Body, Client, Method, Uri};
+use serde::Deserialize;
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -20,6 +21,7 @@ use tokio::sync::Mutex;
 ///       - Hop-by-hop headers, which are meaningful only for a single
 ///         transport-level connection, and are not stored by caches or
 ///         forwarded by proxies.
+///
 /// The following HTTP/1.1 headers are hop-by-hop headers:
 ///
 ///       - Connection
@@ -44,19 +46,46 @@ const HOP_BY_HOP_HEADERS: [&str; 8] = [
     "Upgrade",
 ];
 
-pub enum ProxiedTarget {
-    Static(String),
-    Dynamic(String),
+const DYNAMIC_PROXY_HEADERS: [&str; 3] = ["X-Proxy-URL", "X-Proxy-Method", "X-Proxy-Authorization"];
+
+#[derive(Clone, Debug)]
+pub struct Target {
+    url: Uri,
+    method: Method,
+    authorization: Option<HeaderValue>,
+}
+
+/// Represents the target kind for an instance of `Proxy`.
+/// Two main kinds are supported, `Dynamic` and `Static`.
+///
+/// - `Static` Target: The proxy target is set once during proxy configuration,
+/// and is used for the complete lifecycle of the proxy
+///
+/// - `Dynamic` Target: The proxy target is taken from HTTP Headers (these
+/// are defined in the `DYNAMIC_PROXY_HEADERS` array).
+/// Every request should specify the target URL, target Method and any other
+/// relevant headers
+#[derive(Clone, Debug, Deserialize)]
+pub enum Kind {
+    Static(Target),
+    Dynamic,
 }
 
 pub struct Proxy {
-    target: ProxiedTarget,
+    kind: Kind,
+    static_target: Option<Target>,
 }
 
 impl Proxy {
-    pub fn new(target: ProxiedTarget) -> Self {
+    pub fn new(kind: Kind) -> Self {
+        let static_target = match kind {
+            Kind::Static(target) => Some(target),
+            Kind::Dynamic => None,
+        };
+
         Proxy {
-            target,
+            kind,
+            static_target,
         }
     }
 
@@ -91,17 +120,21 @@ impl Proxy {
         let mut request = request.lock().await;
         let headers = request.headers_mut();
 
-        headers.append(HeaderName::from_static("X-Forwarded-For"), HeaderValue::from_bytes(b"192.168.0.1").unwrap());
+        // TODO: Extract host IP from Request and assign it to X-Forwarded-For
+        headers.append(
+            HeaderName::from_static("X-Forwarded-For"),
+            HeaderValue::from_bytes(b"192.168.0.1").unwrap(),
+        );
     }
 
     async fn proxy(&self, request: Arc<Mutex<Request<Body>>>) {
         let mut request = request.lock().await;
 
         match &self.target {
-            ProxiedTarget::Static(url) => {
+            Kind::Static(target) => {
                 self.perform_request(url.as_str()).await;
-            },
-            ProxiedTarget::Dynamic(header) => {
+            }
+            Kind::Dynamic => {
                 let headers = request.headers_mut();
 
                 if let Some(url) = headers.get(header) {
@@ -112,8 +145,6 @@ impl Proxy {
     }
 
     async fn perform_request(&self, url: &str) -> Response<Body> {
-        let uri = Uri::from_str(url).unwrap();
-        let request = Request::builder()
-            .uri(Uri::from)
+        todo!()
     }
 }

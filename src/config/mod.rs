@@ -2,10 +2,12 @@ pub mod basic_auth;
 pub mod compression;
 pub mod cors;
 pub mod file;
+pub mod proxy;
 pub mod tls;
 pub mod util;
 
 use anyhow::{Error, Result};
+use http::Method;
 use std::convert::TryFrom;
 use std::env::current_dir;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -17,6 +19,7 @@ use self::basic_auth::BasicAuthConfig;
 use self::compression::CompressionConfig;
 use self::cors::CorsConfig;
 use self::file::ConfigFile;
+use self::proxy::ProxyConfig;
 use self::tls::TlsConfig;
 
 /// Server instance configuration used on initialization
@@ -30,6 +33,7 @@ pub struct Config {
     cors: Option<CorsConfig>,
     compression: Option<CompressionConfig>,
     basic_auth: Option<BasicAuthConfig>,
+    proxy: Option<ProxyConfig>,
 }
 
 impl Config {
@@ -68,6 +72,10 @@ impl Config {
     pub fn basic_auth(&self) -> Option<BasicAuthConfig> {
         self.basic_auth.clone()
     }
+
+    pub fn proxy(&self) -> Option<ProxyConfig> {
+        self.proxy.clone()
+    }
 }
 
 impl Default for Config {
@@ -87,6 +95,7 @@ impl Default for Config {
             cors: None,
             compression: None,
             basic_auth: None,
+            proxy: None,
         }
     }
 }
@@ -137,6 +146,28 @@ impl TryFrom<Cli> for Config {
                 None
             };
 
+        let proxy: Option<ProxyConfig> = if let Some(value) = cli_arguments.proxy {
+            use crate::addon::proxy::{Kind, Target};
+
+            if value == "dynamic" {
+                Some(ProxyConfig {
+                    kind: Kind::Dynamic,
+                })
+            } else {
+                let target = Target {
+                    url: value.parse().unwrap(),
+                    method: Method::GET,
+                    authorization: None,
+                };
+
+                Some(ProxyConfig {
+                    kind: Kind::Static(target),
+                })
+            }
+        } else {
+            None
+        };
+
         Ok(Config {
             host: cli_arguments.host,
             port: cli_arguments.port,
@@ -147,6 +178,7 @@ impl TryFrom<Cli> for Config {
             cors,
             compression,
             basic_auth,
+            proxy,
         })
     }
 }
@@ -177,6 +209,7 @@ impl TryFrom<ConfigFile> for Config {
             cors: file.cors,
             compression: file.compression,
             basic_auth: file.basic_auth,
+            proxy: file.proxy,
         })
     }
 }
