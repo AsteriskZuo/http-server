@@ -300,7 +300,16 @@ mod tests {
 
         let proxy_config = config.proxy.unwrap();
 
-        assert!(matches!(proxy_config.kind, proxy::Kind::Static(_)));
+        assert!(!proxy_config.is_dynamic);
+        assert_eq!(
+            proxy_config.url,
+            Some(String::from("https://httpbin.org/get"))
+        );
+        assert_eq!(proxy_config.method, Some(String::from("GET")));
+        assert_eq!(
+            proxy_config.authorization,
+            Some(String::from("Bearer 1234"))
+        );
     }
 
     #[test]

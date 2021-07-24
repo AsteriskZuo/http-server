@@ -80,7 +80,7 @@ impl Middleware {
     pub async fn handle(
         &self,
         request: http::Request<Body>,
-        handler: Handler,
+        handler: Arc<Handler>,
     ) -> http::Response<Body> {
         let request = Arc::new(Mutex::new(request));
 

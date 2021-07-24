@@ -65,7 +65,7 @@ pub struct Target {
 /// are defined in the `DYNAMIC_PROXY_HEADERS` array).
 /// Every request should specify the target URL, target Method and any other
 /// relevant headers
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub enum Kind {
     Static(Target),
     Dynamic,
@@ -73,19 +73,22 @@ pub enum Kind {
 
 pub struct Proxy {
     kind: Kind,
-    static_target: Option<Target>,
 }
 
 impl Proxy {
-    pub fn new(kind: Kind) -> Self {
-        let static_target = match kind {
-            Kind::Static(target) => Some(target),
-            Kind::Dynamic => None,
-        };
-
+    pub fn new_dynamic() -> Self {
         Proxy {
-            kind,
-            static_target,
+            kind: Kind::Dynamic,
+        }
+    }
+
+    pub fn new_static(url: Uri, method: Method, authorization: Option<HeaderValue>) -> Self {
+        Proxy {
+            kind: Kind::Static(Target {
+                url,
+                method,
+                authorization,
+            }),
         }
     }
 
@@ -130,14 +133,14 @@ impl Proxy {
     async fn proxy(&self, request: Arc<Mutex<Request<Body>>>) {
         let mut request = request.lock().await;
 
-        match &self.target {
+        match &self.kind {
             Kind::Static(target) => {
-                self.perform_request(url.as_str()).await;
+                self.perform_request(target.url.to_string().as_str()).await;
             }
             Kind::Dynamic => {
                 let headers = request.headers_mut();
 
-                if let Some(url) = headers.get(header) {
+                if let Some(url) = headers.get(HeaderName::from_str("X-Proxy-URL").unwrap()) {
                     self.perform_request(url.to_str().unwrap()).await;
                 }
             }

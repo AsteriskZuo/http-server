@@ -147,22 +147,10 @@ impl TryFrom<Cli> for Config {
             };
 
         let proxy: Option<ProxyConfig> = if let Some(value) = cli_arguments.proxy {
-            use crate::addon::proxy::{Kind, Target};
-
             if value == "dynamic" {
-                Some(ProxyConfig {
-                    kind: Kind::Dynamic,
-                })
+                Some(ProxyConfig::new_dynamic())
             } else {
-                let target = Target {
-                    url: value.parse().unwrap(),
-                    method: Method::GET,
-                    authorization: None,
-                };
-
-                Some(ProxyConfig {
-                    kind: Kind::Static(target),
-                })
+                Some(ProxyConfig::raw_url(value))
             }
         } else {
             None
