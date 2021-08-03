@@ -41,7 +41,7 @@ impl TryFrom<ProxyConfig> for Proxy {
             return Ok(Proxy::new_dynamic());
         }
 
-        if value.url.is_some() && value.method.is_some() && value.authorization.is_some() {
+        if value.url.is_some() && value.method.is_some() {
             let url: Uri = value.url.unwrap().parse().map_err(Error::from)?;
             let method: Method = value.method.unwrap().parse().map_err(Error::from)?;
 
@@ -55,6 +55,8 @@ impl TryFrom<ProxyConfig> for Proxy {
             return Ok(Proxy::new_static(url, method, None));
         }
 
-        Err(Error::msg("Invalid configuration for Proxy provided"))
+        Err(Error::msg(
+            "Expected either \"dynamic\" keyword or a URL as target endpoint",
+        ))
     }
 }

@@ -6,7 +6,7 @@ use crate::server::middleware::Handler;
 
 use super::Proxy;
 
-/// Creates a `middleware::Handler` which makes use of the provided `FileExplorer`
+/// Creates a `middleware::Handler` which makes use of the provided `Proxy` instance
 pub fn make_proxy_handler(proxy: Arc<Proxy>) -> Handler {
     Box::new(move |request: Arc<Mutex<Request<Body>>>| {
         let proxy = Arc::clone(&proxy);
