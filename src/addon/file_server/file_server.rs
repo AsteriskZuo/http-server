@@ -1,153 +1,36 @@
 use anyhow::{Context, Result};
-use chrono::prelude::*;
-use chrono::{DateTime, Local};
 use handlebars::Handlebars;
 use http::response::Builder as HttpResponseBuilder;
 use http::{StatusCode, Uri};
-use hyper::{Body, Method, Request, Response};
-use serde::Serialize;
-use std::cmp::{Ord, Ordering};
+use hyper::{Body, Response};
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::Arc;
-use std::time::SystemTime;
-use tokio::sync::Mutex;
 
-use crate::server::middleware::Handler;
+use crate::utils::fmt::{format_bytes, format_system_date};
 
+use super::directory_entry::{DirectoryEntry, DirectoryIndex};
 use super::http::{make_http_file_response, CacheControlDirective};
 use super::{Entry, ScopedFileSystem};
-
-/// Creates a `middleware::Handler` which makes use of the provided `FileExplorer`
-pub fn make_file_server_handler(handler: Arc<FileServerHandler>) -> Handler {
-    Box::new(move |request: Arc<Mutex<Request<Body>>>| {
-        let handler = Arc::clone(&handler);
-        let request = Arc::clone(&request);
-
-        Box::pin(async move {
-            let request = Arc::clone(&request);
-            let request_lock = request.lock().await;
-            let req_path = request_lock.uri().to_string();
-            let req_method = request_lock.method();
-
-            if req_method == Method::GET {
-                return handler
-                    .resolve(req_path)
-                    .await
-                    .map_err(|e| {
-                        HttpResponseBuilder::new()
-                            .status(StatusCode::INTERNAL_SERVER_ERROR)
-                            .body(Body::from(e.to_string()))
-                            .expect("Unable to build response")
-                    })
-                    .unwrap();
-            }
-
-            HttpResponseBuilder::new()
-                .status(StatusCode::METHOD_NOT_ALLOWED)
-                .body(Body::empty())
-                .expect("Unable to build response")
-        })
-    })
-}
 
 /// Explorer's Handlebars template filename
 const EXPLORER_TEMPLATE: &str = "explorer";
 
-/// Byte size units
-const BYTE_SIZE_UNIT: [&str; 9] = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-
-/// A Directory entry used to display a File Explorer's entry.
-/// This struct is directly related to the Handlebars template used
-/// to power the File Explorer's UI
-#[derive(Debug, Eq, Serialize)]
-struct DirectoryEntry {
-    display_name: String,
-    is_dir: bool,
-    size: String,
-    entry_path: String,
-    created_at: String,
-    updated_at: String,
-}
-
-impl Ord for DirectoryEntry {
-    fn cmp(&self, other: &Self) -> Ordering {
-        if self.is_dir && other.is_dir {
-            return self.display_name.cmp(&other.display_name);
-        }
-
-        if self.is_dir && !other.is_dir {
-            return Ordering::Less;
-        }
-
-        Ordering::Greater
-    }
-}
-
-impl PartialOrd for DirectoryEntry {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        if self.is_dir && other.is_dir {
-            return Some(self.display_name.cmp(&other.display_name));
-        }
-
-        if self.is_dir && !other.is_dir {
-            return Some(Ordering::Less);
-        }
-
-        Some(Ordering::Greater)
-    }
-}
-
-impl PartialEq for DirectoryEntry {
-    fn eq(&self, other: &Self) -> bool {
-        if self.is_dir && other.is_dir {
-            return self.display_name == other.display_name;
-        }
-
-        self.display_name == other.display_name
-    }
-}
-
-/// The value passed to the Handlebars template engine.
-/// All references contained in File Explorer's UI are provided
-/// via the `DirectoryIndex` struct
-#[derive(Debug, Serialize)]
-struct DirectoryIndex {
-    /// Directory listing entry
-    entries: Vec<DirectoryEntry>,
-}
-
-/// The File Explorer service is in charge of indexing and rendering a
-/// rich view of a Directory served by the HTTP Server.
-///
-/// Files and directories rendered should be relative to the configured
-/// `root_dir`. This means that if the provided `root_dir` is:
-/// `Users/Esteban/Documents` then the HTTP Request URI `/` will match
-/// `Users/Esteban/Documents` and HTTP Request URI `/Lists/FavoriteFood.txt`
-/// will match `Users/Esteban/Documents/Lists/FavoriteFood.txt`.
-///
-/// The File Explorer will read the HTTP Request URI and serve either
-/// a directory listing UI, for directory/folder matches or a static file
-/// for supported MIME types.
-///
-/// If the matched file is not a supported MIME type, such file will be
-/// downloaded based on navigator preferences.
-#[derive(Clone)]
-pub struct FileServerHandler {
+pub struct FileServer {
     root_dir: PathBuf,
     cache_headers: Option<u32>,
     handlebars: Arc<Handlebars<'static>>,
     scoped_file_system: ScopedFileSystem,
 }
 
-impl<'a> FileServerHandler {
+impl<'a> FileServer {
     /// Creates a new instance of the `FileExplorer` with the provided `root_dir`
     pub fn new(root_dir: PathBuf) -> Self {
-        let handlebars = FileServerHandler::make_handlebars_engine();
+        let handlebars = FileServer::make_handlebars_engine();
         let scoped_file_system = ScopedFileSystem::new(root_dir.clone()).unwrap();
 
-        FileServerHandler {
+        FileServer {
             root_dir,
             cache_headers: None,
             handlebars,
@@ -210,7 +93,7 @@ impl<'a> FileServerHandler {
     pub async fn resolve(&self, req_path: String) -> Result<Response<Body>> {
         use std::io::ErrorKind;
 
-        let path = FileServerHandler::sanitize_path(req_path.as_str())?;
+        let path = FileServer::sanitize_path(req_path.as_str())?;
 
         return match self.scoped_file_system.resolve(path).await {
             Ok(entry) => match entry {
@@ -236,7 +119,7 @@ impl<'a> FileServerHandler {
     /// is used to build the Handlebars "Explorer" template using the Handlebars
     /// engine and builds an HTTP Response containing such file
     async fn render_directory_index(&self, path: PathBuf) -> Result<Response<Body>> {
-        let directory_index = FileServerHandler::index_directory(self.root_dir.clone(), path)?;
+        let directory_index = FileServer::index_directory(self.root_dir.clone(), path)?;
         let html = self
             .handlebars
             .render(EXPLORER_TEMPLATE, &directory_index)
@@ -261,12 +144,12 @@ impl<'a> FileServerHandler {
             let entry = entry.context("Unable to read entry")?;
             let metadata = entry.metadata()?;
             let created_at = if let Ok(time) = metadata.created() {
-                FileServerHandler::format_system_date(time)
+                format_system_date(time)
             } else {
                 String::default()
             };
             let updated_at = if let Ok(time) = metadata.modified() {
-                FileServerHandler::format_system_date(time)
+                format_system_date(time)
             } else {
                 String::default()
             };
@@ -278,8 +161,8 @@ impl<'a> FileServerHandler {
                     .context("Unable to gather file name into a String")?
                     .to_string(),
                 is_dir: metadata.is_dir(),
-                size: FileServerHandler::format_bytes(metadata.len() as f64),
-                entry_path: FileServerHandler::make_dir_entry_link(&root_dir, &entry.path()),
+                size: format_bytes(metadata.len() as f64),
+                entry_path: FileServer::make_dir_entry_link(&root_dir, &entry.path()),
                 created_at,
                 updated_at,
             });
@@ -310,58 +193,15 @@ impl<'a> FileServerHandler {
 
         entry_path[root_dir.len()..].to_string()
     }
-
-    /// Calculates the format of the `Bytes` by converting `bytes` to the
-    /// corresponding unit and returns a human readable size label
-    fn format_bytes(bytes: f64) -> String {
-        if bytes == 0. {
-            return String::from("0 Bytes");
-        }
-
-        let i = (bytes.log10() / 1024_f64.log10()).floor();
-        let value = bytes / 1024_f64.powf(i);
-
-        format!("{:.2} {}", value, BYTE_SIZE_UNIT[i as usize])
-    }
-
-    /// Formats a `SystemTime` into a YYYY/MM/DD HH:MM:SS time `String`
-    fn format_system_date(system_time: SystemTime) -> String {
-        let datetime: DateTime<Local> = DateTime::from(system_time);
-
-        format!(
-            "{}/{:0>2}/{:0>2} {:0>2}:{:0>2}:{:0>2}",
-            datetime.year(),
-            datetime.month(),
-            datetime.day(),
-            datetime.hour(),
-            datetime.minute(),
-            datetime.second()
-        )
-    }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
     use std::str::FromStr;
     use std::vec;
 
-    use super::*;
-
-    #[test]
-    fn formats_bytes() {
-        let byte_sizes = vec![1024., 1048576., 1073741824., 1099511627776.];
-
-        let expect = vec![
-            String::from("1.00 KB"),
-            String::from("1.00 MB"),
-            String::from("1.00 GB"),
-            String::from("1.00 TB"),
-        ];
-
-        for (idx, size) in byte_sizes.into_iter().enumerate() {
-            assert_eq!(FileServerHandler::format_bytes(size), expect[idx]);
-        }
-    }
+    use super::FileServer;
 
     #[test]
     fn makes_dir_entry_link() {
@@ -372,7 +212,7 @@ mod tests {
 
         assert_eq!(
             "/src/server/service/file_explorer.rs",
-            FileServerHandler::make_dir_entry_link(&root_dir, &entry_path)
+            FileServer::make_dir_entry_link(&root_dir, &entry_path)
         );
     }
 
@@ -393,7 +233,7 @@ mod tests {
         ];
 
         for (idx, req_uri) in have.iter().enumerate() {
-            let sanitized_path = FileServerHandler::sanitize_path(req_uri).unwrap();
+            let sanitized_path = FileServer::sanitize_path(req_uri).unwrap();
             let wanted_path = PathBuf::from_str(want[idx]).unwrap();
 
             assert_eq!(sanitized_path, wanted_path);
