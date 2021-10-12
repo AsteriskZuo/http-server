@@ -51,6 +51,9 @@ pub struct Cli {
     /// Specifies password for basic authentication
     #[structopt(long = "password")]
     pub password: Option<String>,
+    /// Specifies server type
+    #[structopt(long = "server-type", short = "st", default_value = "0")]
+    pub server_type: i32,
 }
 
 impl Cli {
@@ -75,6 +78,7 @@ impl Default for Cli {
             gzip: false,
             username: None,
             password: None,
+            server_type: 0,
         }
     }
 }

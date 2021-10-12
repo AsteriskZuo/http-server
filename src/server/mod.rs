@@ -20,8 +20,10 @@ pub struct Server {
 impl Server {
     pub fn new(config: Config) -> Server {
         let config = Arc::new(config);
-
-        Server { config }
+        if config.verbose() {
+            println!("config={:?}", config);
+        }
+        Server { config }        
     }
 
     pub async fn run(self) {

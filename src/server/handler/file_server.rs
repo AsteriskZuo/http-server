@@ -5,26 +5,34 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::addon::file_server::FileServer;
+use crate::addon::api_server::ApiServer;
 
 use super::Handler;
+use super::ServerHandler;
 
+#[derive(Default)]
 pub struct FileServerHandler {
     file_server: Arc<FileServer>,
 }
 
-impl FileServerHandler {
-    pub fn new(file_server: FileServer) -> Self {
+impl ServerHandler for FileServerHandler {
+    fn new_file(file_server: FileServer) -> Self {
         let file_server = Arc::new(file_server);
 
         FileServerHandler { file_server }
     }
+    fn new_api(api_server: ApiServer) -> Self {
+        panic!("can't create ServerHandler {:?}", api_server)
+    }
 
-    pub fn handle(&self) -> Handler {
+    fn handle(&self) -> Handler {
         let file_server = Arc::clone(&self.file_server);
 
         Box::new(move |request: Arc<Mutex<Request<Body>>>| {
             let file_server = Arc::clone(&file_server);
             let request = Arc::clone(&request);
+
+            println!("req:{:?}", request);
 
             Box::pin(async move {
                 let file_server = Arc::clone(&file_server);

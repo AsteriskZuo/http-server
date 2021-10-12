@@ -16,7 +16,6 @@ fn resolve_config(cli_arguments: cli::Cli) -> Result<Config> {
     if let Some(config_path) = cli_arguments.config {
         let config_file = ConfigFile::from_file(config_path)?;
         let config = Config::try_from(config_file)?;
-
         return Ok(config);
     }
 

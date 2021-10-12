@@ -38,7 +38,7 @@ pub enum Entry {
 
 /// `ScopedFileSystem` to resolve and serve static files relative to an specific
 /// file system directory
-#[derive(Clone)]
+#[derive(Clone, Default, Debug)]
 pub struct ScopedFileSystem {
     pub root: PathBuf,
 }

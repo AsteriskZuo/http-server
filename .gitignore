@@ -53,6 +53,7 @@ Thumbs.db
 # Editor Files #
 ################
 /.vscode
+.history
 
 # Tests #
 #########

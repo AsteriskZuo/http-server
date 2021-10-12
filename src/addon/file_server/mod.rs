@@ -24,6 +24,7 @@ use self::http_utils::{make_http_file_response, CacheControlDirective};
 /// Explorer's Handlebars template filename
 const EXPLORER_TEMPLATE: &str = "explorer";
 
+#[derive(Default, Debug)]
 pub struct FileServer {
     root_dir: PathBuf,
     handlebars: Arc<Handlebars<'static>>,

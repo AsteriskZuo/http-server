@@ -19,7 +19,25 @@ use self::cors::CorsConfig;
 use self::file::ConfigFile;
 use self::tls::TlsConfig;
 
+#[derive(Clone, Debug)]
+pub enum ServerType {
+    UnknownServices = -1,
+    FileServices = 0,
+    ApiServices = 1,
+}
+
+impl From<i32> for ServerType {
+    fn from(v: i32) -> Self {
+        match v {
+            0 => ServerType::FileServices,
+            1 => ServerType::ApiServices,
+            _ => ServerType::UnknownServices,
+        }
+    }
+}
+
 /// Server instance configuration used on initialization
+#[derive(Debug)]
 pub struct Config {
     address: SocketAddr,
     host: IpAddr,
@@ -30,6 +48,7 @@ pub struct Config {
     cors: Option<CorsConfig>,
     compression: Option<CompressionConfig>,
     basic_auth: Option<BasicAuthConfig>,
+    default_action: ServerType,
 }
 
 impl Config {
@@ -68,6 +87,10 @@ impl Config {
     pub fn basic_auth(&self) -> Option<BasicAuthConfig> {
         self.basic_auth.clone()
     }
+
+    pub fn action(&self) -> ServerType {
+        self.default_action.clone()
+    }
 }
 
 impl Default for Config {
@@ -87,6 +110,7 @@ impl Default for Config {
             cors: None,
             compression: None,
             basic_auth: None,
+            default_action: ServerType::FileServices,
         }
     }
 }
@@ -136,6 +160,11 @@ impl TryFrom<Cli> for Config {
             } else {
                 None
             };
+        match cli_arguments.server_type {
+            0 => (),
+            1 => (),
+            _ => panic!("not support this type: {}", cli_arguments.server_type),
+        }
 
         Ok(Config {
             host: cli_arguments.host,
@@ -147,6 +176,7 @@ impl TryFrom<Cli> for Config {
             cors,
             compression,
             basic_auth,
+            default_action: ServerType::from(cli_arguments.server_type),
         })
     }
 }
@@ -177,6 +207,7 @@ impl TryFrom<ConfigFile> for Config {
             cors: file.cors,
             compression: file.compression,
             basic_auth: file.basic_auth,
+            default_action: ServerType::FileServices,
         })
     }
 }
