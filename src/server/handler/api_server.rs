@@ -1,7 +1,6 @@
-
 use http::response::Builder as HttpResponseBuilder;
 use http::StatusCode;
-use hyper::{Body, Method, Request};
+use hyper::{Body, Request};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -21,8 +20,9 @@ impl ServerHandler for ApiServerHandler {
     panic!("can't create ServerHandler {:?}", file_server)
   }
   fn new_api(api_server: ApiServer) -> Self {
-    let api_server = Arc::new(Default::default());
-    ApiServerHandler { api_server }
+    ApiServerHandler {
+      api_server: Arc::new(api_server),
+    }
   }
 
   fn handle(&self) -> Handler {
@@ -30,32 +30,30 @@ impl ServerHandler for ApiServerHandler {
 
     Box::new(move |request: Arc<Mutex<Request<Body>>>| {
       let api_server = Arc::clone(&api_server);
-      let request = Arc::clone(&request);
-
+      
       Box::pin(async move {
-        let api_server = Arc::clone(&api_server);
-        let request = Arc::clone(&request);
-        let request_lock = request.lock().await;
-        let req_path = request_lock.uri().to_string();
-        let req_method = request_lock.method();
-
-        if req_method == Method::GET {
-          return api_server
-            .resolve(req_path)
-            .await
-            .map_err(|e| {
-              HttpResponseBuilder::new()
-                .status(StatusCode::INTERNAL_SERVER_ERROR)
-                .body(Body::from(e.to_string()))
-                .expect("Unable to build response")
-            })
-            .unwrap();
+        match api_server.resolve(request).await {
+          Ok(ret) => ret,
+          Err(e) => {
+            let ret = HttpResponseBuilder::new()
+              .status(StatusCode::NOT_FOUND)
+              .header(http::header::CONTENT_TYPE, "text/html")
+              .body(Body::from(e.to_string()))
+              .expect("Unable to build response");
+            println!("{:?}", ret);
+            return ret;
+          }
         }
-
-        HttpResponseBuilder::new()
-          .status(StatusCode::METHOD_NOT_ALLOWED)
-          .body(Body::empty())
-          .expect("Unable to build response")
+        // api_server
+        //   .resolve(request)
+        //   .await
+        //   .map_err(|e| {
+        //     HttpResponseBuilder::new()
+        //       .status(e)
+        //       .body(Body::from(e.to_string()))
+        //       .expect("Unable to build response")
+        //   })
+        //   .unwrap()
       })
     })
   }

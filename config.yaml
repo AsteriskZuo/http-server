@@ -1,0 +1,15 @@
+showSwaggerDoc: true
+poiServer: "http://uat-lbs.citylife.com/v1/"
+server:
+  port: 8080
+redis:
+  mode: cluster
+  Password: ""
+  Connect:
+    DialTimeout: 500
+    ReadTimeout: 500
+    WriteTimeout: 500
+  Pool:
+    MinIdleConns: 16
+    MaxConnAge: 60
+  hosts: 192.168.110.26:6201,192.168.110.26:6202

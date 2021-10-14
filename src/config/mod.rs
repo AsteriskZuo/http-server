@@ -4,6 +4,7 @@ pub mod cors;
 pub mod file;
 pub mod tls;
 pub mod util;
+mod yaml;
 
 use anyhow::{Error, Result};
 use std::convert::TryFrom;
@@ -36,6 +37,62 @@ impl From<i32> for ServerType {
     }
 }
 
+// type RedisConfig struct {
+// 	Pass    string       `yaml:"pass"`
+// 	Mode    string       `yaml:"mode"`
+// 	Hosts   string       `yaml:"hosts"`
+// 	Connect RedisConnect `yaml:"connect"`
+// 	Pool    RedisPool    `yaml:"pool"`
+// }
+
+// type RedisConnect struct {
+// 	DialTimeout  time.Duration `yaml:"dialTimeout"`
+// 	WriteTimeout time.Duration `yaml:"writeTimeout"`
+// 	ReadTimeout  time.Duration `yaml:"readTimeout"`
+// }
+
+#[derive(Debug, Clone)]
+pub struct RedisConnect {
+    dial_timeout: i64,
+    write_timeout: i64,
+    read_timeout: i64,
+}
+
+impl RedisConnect {}
+
+impl Default for RedisConnect {
+    fn default() -> Self {
+        Self {
+            dial_timeout: Default::default(),
+            write_timeout: Default::default(),
+            read_timeout: Default::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct RedisConfig {
+    pass: String,
+    mode: String,
+    hosts: String,
+    connect: RedisConnect,
+    pool: String,
+}
+
+impl RedisConfig {}
+
+impl Default for RedisConfig {
+    fn default() -> Self {
+        Self {
+            pass: Default::default(),
+            mode: Default::default(),
+            hosts: Default::default(),
+            connect: Default::default(),
+            pool: Default::default(),
+        }
+    }
+}
+
 /// Server instance configuration used on initialization
 #[derive(Debug)]
 pub struct Config {
@@ -48,7 +105,8 @@ pub struct Config {
     cors: Option<CorsConfig>,
     compression: Option<CompressionConfig>,
     basic_auth: Option<BasicAuthConfig>,
-    default_action: ServerType,
+    action: ServerType,
+    redis_config: RedisConfig,
 }
 
 impl Config {
@@ -89,7 +147,18 @@ impl Config {
     }
 
     pub fn action(&self) -> ServerType {
-        self.default_action.clone()
+        self.action.clone()
+    }
+
+    pub fn redis(&self) -> RedisConfig {
+        self.redis_config.clone()
+    }
+    
+    pub fn init_redis(&mut self) {
+        match yaml::read_config_from_yaml(self) {
+            Ok(_) => (),
+            Err(error) => panic!("error: {:?}", error.to_string()),
+        }
     }
 }
 
@@ -100,7 +169,7 @@ impl Default for Config {
         let address = SocketAddr::new(host, port);
         let root_dir = current_dir().unwrap();
 
-        Self {
+        let mut ret = Self {
             host,
             port,
             address,
@@ -110,8 +179,11 @@ impl Default for Config {
             cors: None,
             compression: None,
             basic_auth: None,
-            default_action: ServerType::FileServices,
-        }
+            action: ServerType::FileServices,
+            redis_config: Default::default(),
+        };
+        ret.init_redis();
+        return ret;
     }
 }
 
@@ -166,7 +238,7 @@ impl TryFrom<Cli> for Config {
             _ => panic!("not support this type: {}", cli_arguments.server_type),
         }
 
-        Ok(Config {
+        let mut ret = Config {
             host: cli_arguments.host,
             port: cli_arguments.port,
             address: SocketAddr::new(cli_arguments.host, cli_arguments.port),
@@ -176,8 +248,11 @@ impl TryFrom<Cli> for Config {
             cors,
             compression,
             basic_auth,
-            default_action: ServerType::from(cli_arguments.server_type),
-        })
+            action: ServerType::from(cli_arguments.server_type),
+            redis_config: Default::default(),
+        };
+        ret.init_redis();
+        return Ok(ret);
     }
 }
 
@@ -197,7 +272,7 @@ impl TryFrom<ConfigFile> for Config {
             None
         };
 
-        Ok(Config {
+        let mut ret = Config {
             host: file.host,
             port: file.port,
             address: SocketAddr::new(file.host, file.port),
@@ -207,8 +282,11 @@ impl TryFrom<ConfigFile> for Config {
             cors: file.cors,
             compression: file.compression,
             basic_auth: file.basic_auth,
-            default_action: ServerType::FileServices,
-        })
+            action: ServerType::FileServices,
+            redis_config: Default::default(),
+        };
+        ret.init_redis();
+        return Ok(ret);
     }
 }
 
