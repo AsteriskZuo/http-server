@@ -53,9 +53,9 @@ impl From<i32> for ServerType {
 
 #[derive(Debug, Clone)]
 pub struct RedisConnect {
-    dial_timeout: i64,
-    write_timeout: i64,
-    read_timeout: i64,
+    pub dial_timeout: i64,
+    pub write_timeout: i64,
+    pub read_timeout: i64,
 }
 
 impl RedisConnect {}
@@ -72,11 +72,11 @@ impl Default for RedisConnect {
 
 #[derive(Debug, Clone)]
 pub struct RedisConfig {
-    pass: String,
-    mode: String,
-    hosts: String,
-    connect: RedisConnect,
-    pool: String,
+    pub pass: String,
+    pub mode: String,
+    pub hosts: String,
+    pub connect: RedisConnect,
+    pub pool: String,
 }
 
 impl RedisConfig {}

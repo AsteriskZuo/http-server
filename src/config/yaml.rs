@@ -2,14 +2,16 @@ use super::Config;
 use std::error::Error;
 use std::fmt::Display;
 use std::fs::File;
+use std::io::Read;
 use std::io::Seek;
-use std::io::{Read, SeekFrom};
 use std::option::Option;
 use yaml_rust::Yaml;
 
+type YamlErrorCode = i32;
+
 #[derive(Debug)]
 pub struct YamlError {
-  code: i32,
+  code: YamlErrorCode,
   reason: String,
 }
 

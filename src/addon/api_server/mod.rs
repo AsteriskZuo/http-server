@@ -7,6 +7,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 mod service;
+mod redis;
 
 #[derive(Default, Debug)]
 pub struct ApiServer {
@@ -30,9 +31,14 @@ impl<'a> ApiServer {
     match *req_method {
       Method::GET => {
         if req_path.contains("/api/v1/health") {
-          return self.health(Arc::clone(&request));
+          return self.health();
         } else if req_path.contains("/api/v1/navi") {
-          return self.get_id(Arc::clone(&request));
+          let list: Vec<_> = req_path.as_str().split(':').collect();
+          let mut id = String::new();
+          if 2 == list.len() {
+            id = list[1].to_string();
+          }
+          return self.get_id(id);
         } else {
           return Err(StatusCode::CONTINUE);
         }
@@ -50,7 +56,7 @@ impl<'a> ApiServer {
 }
 
 impl ApiServer {
-  fn health(&self, request: Arc<Mutex<Request<Body>>>) -> Result<Response<Body>, StatusCode> {
+  fn health(&self) -> Result<Response<Body>, StatusCode> {
     Ok(
       HttpResponseBuilder::new()
         .header(http::header::CONTENT_TYPE, "text/html")
@@ -59,14 +65,20 @@ impl ApiServer {
         .expect("Failed to build response"),
     )
   }
-  fn get_id(&self, request: Arc<Mutex<Request<Body>>>) -> Result<Response<Body>, StatusCode> {
-    Ok(
-      HttpResponseBuilder::new()
-        .header(http::header::CONTENT_TYPE, "text/html")
-        .status(StatusCode::OK)
-        .body(Body::from("get_id"))
-        .expect("Failed to build response"),
-    )
+  fn get_id(&self, id: String) -> Result<Response<Body>, StatusCode> {
+    match service::get_result(&id) {
+      Ok(ret) => Ok(
+        HttpResponseBuilder::new()
+          .header(http::header::CONTENT_TYPE, "application/octet-stream")
+          .status(StatusCode::OK)
+          .body(Body::from(ret.to_vec()))
+          .expect("Failed to build response"),
+      ),
+      Err(error) => {
+        println!("get_id>ret={}", error);
+        Err(StatusCode::INTERNAL_SERVER_ERROR)
+      }
+    }
   }
   fn get_path(&self, request: Arc<Mutex<Request<Body>>>) -> Result<Response<Body>, StatusCode> {
     Ok(
