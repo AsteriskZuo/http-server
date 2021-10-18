@@ -6,18 +6,23 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
+use crate::config::Config;
+
+mod redis_client;
 mod service;
-mod redis;
 
 #[derive(Default, Debug)]
 pub struct ApiServer {
-  root_dir: PathBuf,
+  // root_dir: PathBuf,
+  services: Arc<service::Service>,
 }
 
 impl<'a> ApiServer {
   /// Creates a new instance of the `FileExplorer` with the provided `root_dir`
-  pub fn new(root_dir: PathBuf) -> Self {
-    ApiServer { root_dir }
+  pub fn new(config: Arc<Config>) -> Self {
+    ApiServer {
+      services: Arc::new(service::Service::new(Arc::clone(&config))),
+    }
   }
 
   /// Resolves a HTTP Request to a api.
@@ -66,16 +71,18 @@ impl ApiServer {
     )
   }
   fn get_id(&self, id: String) -> Result<Response<Body>, StatusCode> {
-    match service::get_result(&id) {
-      Ok(ret) => Ok(
+    let mut services_arc = self.services.clone();
+    let services_mut = Arc::make_mut(&mut services_arc);
+    match services_mut.get_value(&id) {
+      Some(ret) => Ok(
         HttpResponseBuilder::new()
           .header(http::header::CONTENT_TYPE, "application/octet-stream")
           .status(StatusCode::OK)
-          .body(Body::from(ret.to_vec()))
+          .body(Body::from(ret))
           .expect("Failed to build response"),
       ),
-      Err(error) => {
-        println!("get_id>ret={}", error);
+      None => {
+        println!("get_id>ret=");
         Err(StatusCode::INTERNAL_SERVER_ERROR)
       }
     }

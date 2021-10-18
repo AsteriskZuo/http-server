@@ -1,15 +1,34 @@
-use std::result::Result;
+use std::{result::Result, sync::Arc};
 
 use redis::RedisError;
 
-// use lazy_static::lazy_static;
+use crate::config::Config;
 
-// lazy_static! {
-//   static ref SERVICES: Client<HttpConnector> = Client::new();
-// }
+use super::redis_client::RedisClientOperation;
 
-struct services {
+#[derive(Debug, Default)]
+pub struct Service {
+  redis_client: RedisClientOperation,
+}
 
+impl Clone for Service {
+    fn clone(&self) -> Self {
+        Self { redis_client: self.redis_client.clone() }
+    }
+}
+
+impl Service {
+  pub fn new(config: Arc<Config>) -> Service {
+    Service {
+      redis_client: RedisClientOperation::new(&config.clone().redis_config),
+    }
+  }
+  pub fn save_value(&mut self, id: &String, value: &mut String) -> Result<(), RedisError> {
+    todo!()
+  }
+  pub fn get_value(&mut self, id: &String) -> Option<String> {
+    self.redis_client.get(id)
+  }
 }
 
 pub fn get_result(id: &str) -> Result<&[u8], RedisError> {

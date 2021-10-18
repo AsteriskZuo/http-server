@@ -54,7 +54,7 @@ impl HttpHandler {
         let middleware = Arc::new(middleware);
         match config.action() {
             ServerType::ApiServices => {
-                let api_server = ApiServer::new(config.root_dir());
+                let api_server = ApiServer::new(Arc::clone(&config));
                 HttpHandler {
                     middleware: middleware,
                     file_server_handler: Default::default(),

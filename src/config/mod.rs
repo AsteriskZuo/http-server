@@ -96,17 +96,17 @@ impl Default for RedisConfig {
 /// Server instance configuration used on initialization
 #[derive(Debug)]
 pub struct Config {
-    address: SocketAddr,
-    host: IpAddr,
-    port: u16,
-    root_dir: PathBuf,
-    verbose: bool,
-    tls: Option<TlsConfig>,
-    cors: Option<CorsConfig>,
-    compression: Option<CompressionConfig>,
-    basic_auth: Option<BasicAuthConfig>,
-    action: ServerType,
-    redis_config: RedisConfig,
+    pub address: SocketAddr,
+    pub host: IpAddr,
+    pub port: u16,
+    pub root_dir: PathBuf,
+    pub verbose: bool,
+    pub tls: Option<TlsConfig>,
+    pub cors: Option<CorsConfig>,
+    pub compression: Option<CompressionConfig>,
+    pub basic_auth: Option<BasicAuthConfig>,
+    pub action: ServerType,
+    pub redis_config: RedisConfig,
 }
 
 impl Config {
