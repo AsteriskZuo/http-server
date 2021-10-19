@@ -31,19 +31,23 @@ impl<'a> ApiServer {
     request: Arc<Mutex<Request<Body>>>,
   ) -> Result<Response<Body>, StatusCode> {
     let request_lock = request.lock().await;
-    let req_path = request_lock.uri().to_string();
+    let mut req_path = request_lock.uri().to_string();
     let req_method = request_lock.method();
     match *req_method {
       Method::GET => {
         if req_path.contains("/api/v1/health") {
           return self.health();
         } else if req_path.contains("/api/v1/navi") {
-          let list: Vec<_> = req_path.as_str().split(':').collect();
-          let mut id = String::new();
-          if 2 == list.len() {
-            id = list[1].to_string();
+          let pos = req_path.find(':');
+          match pos {
+            Some(pos) => {
+              let id = req_path.split_off(pos + 1);
+              return self.get_id(id);
+            }
+            None => {
+              return Err(StatusCode::CONTINUE);
+            }
           }
-          return self.get_id(id);
         } else {
           return Err(StatusCode::CONTINUE);
         }

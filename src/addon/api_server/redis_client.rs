@@ -72,6 +72,7 @@ impl RedisClientOperation {
     } else if 1 == info.len() {
       let client = Client::open(info[0].clone()).expect("open redis client is failed.");
       let mut conn = client.get_connection().expect("get connection is failed");
+      assert_eq!(true, conn.check_connection());
       conn
         .set_read_timeout(Some(Duration::from_millis(
           config.connect.read_timeout as u64,
@@ -92,6 +93,7 @@ impl RedisClientOperation {
     } else {
       let client = ClusterClient::open(info).expect("open redis client is failed.");
       let mut conn = client.get_connection().expect("get connection is failed");
+      assert_eq!(true, conn.check_connection());
       conn
         .set_read_timeout(Some(Duration::from_millis(
           config.connect.read_timeout as u64,
