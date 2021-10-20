@@ -56,5 +56,9 @@ hyper = { version = "0.14", features = ["client"] }
 tokio = { version = "1", features = ["full"] }
 lazy_static = "1.4"
 
+[build-dependencies]
+bindgen = "0.59.0"
+cc = "1.0.70"
+
 [profile.release]
 debug = 1

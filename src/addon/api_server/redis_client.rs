@@ -1,13 +1,9 @@
-use redis::cluster::ClusterConnection;
-use redis::Cmd;
+use core::fmt::Debug;
+use core::ops::DerefMut;
 use redis::{
-  cluster::ClusterClient, Client, Connection, ConnectionAddr, ConnectionInfo, ConnectionLike,
+  cluster::ClusterClient, Client, ConnectionAddr, ConnectionInfo, ConnectionLike,
   RedisConnectionInfo, RedisError,
 };
-use std::error::Error;
-use std::fmt::Debug;
-use std::fmt::Display;
-use std::ops::DerefMut;
 use std::result::Result;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
@@ -16,7 +12,6 @@ use std::time::Duration;
 use crate::config::RedisConfig;
 
 type RedisValue = String;
-type RedisErrorCode = i32;
 
 enum RedisClient {
   SingleClientType(redis::Client),

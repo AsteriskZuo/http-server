@@ -2,18 +2,17 @@ use anyhow::Result;
 use http::response::Builder as HttpResponseBuilder;
 use http::StatusCode;
 use hyper::{Body, Method, Request, Response};
-use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::config::Config;
 
 mod redis_client;
+mod route_wrapper;
 mod service;
 
 #[derive(Default, Debug)]
 pub struct ApiServer {
-  // root_dir: PathBuf,
   services: Arc<service::Service>,
 }
 
@@ -33,6 +32,7 @@ impl<'a> ApiServer {
     let request_lock = request.lock().await;
     let mut req_path = request_lock.uri().to_string();
     let req_method = request_lock.method();
+    println!("{:?}{:?}", req_path.to_string(), req_method.to_string());
     match *req_method {
       Method::GET => {
         if req_path.contains("/api/v1/health") {

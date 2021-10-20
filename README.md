@@ -230,3 +230,12 @@ an issue or just by starting this project.
 ## License
 
 Distributed under the terms of both the MIT license and the Apache License (Version 2.0)
+
+## Debug
+
+vscode config file: 
+`      "args": [
+        "--verbose",
+        "--server-type=1"
+      ],
+`
