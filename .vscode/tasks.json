@@ -1,0 +1,11 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Rust: cargo rustc - http-server",
+			"group": "build",
+			"type": "shell",
+			"command": "cargo rustc --bin http-server -- -C link-args=-Wl,-rpath,@executable_path"
+		}
+	]
+}
