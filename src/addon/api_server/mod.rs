@@ -54,7 +54,16 @@ impl<'a> ApiServer {
       }
       Method::POST => {
         if req_path.contains("/api/v1/navi") {
-          return self.get_path(Arc::clone(&request));
+          let pos = req_path.find('?');
+          match pos {
+            Some(pos) => {
+              let data = req_path.split_off(pos + 1);
+              return self.get_path(data);
+            }
+            None => {
+              return Err(StatusCode::CONTINUE);
+            }
+          }
         } else {
           return Err(StatusCode::CONTINUE);
         }
@@ -91,7 +100,7 @@ impl ApiServer {
       }
     }
   }
-  fn get_path(&self, request: Arc<Mutex<Request<Body>>>) -> Result<Response<Body>, StatusCode> {
+  fn get_path(&self, data: String) -> Result<Response<Body>, StatusCode> {
     Ok(
       HttpResponseBuilder::new()
         .header(http::header::CONTENT_TYPE, "text/html")

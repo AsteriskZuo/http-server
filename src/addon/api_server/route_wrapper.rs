@@ -37,12 +37,18 @@ fn test_c() {
   test_cpp_route_function();
 }
 
+type RouteErrorCode = i32;
+pub struct RouteError {
+  code: RouteErrorCode,
+}
 #[derive(Debug, Default, Clone)]
 pub struct RouteWrapper {}
 
 impl RouteWrapper {
-  pub fn init() -> i32 {
+  pub fn init(rout_config_path: String) -> i32 {
     todo!()
   }
-  pub fn find_path() {}
+  pub fn find_path(condition: String)->Result<(String, String), RouteError> {
+    todo!()
+  }
 }

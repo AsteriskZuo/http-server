@@ -191,3 +191,27 @@ impl RedisClientOperation {
     return ret;
   }
 }
+
+#[cfg(test)]
+pub mod tests {
+  #[test]
+  fn test1() {
+    use super::*;
+    use crate::config::{RedisConfig, RedisConnect};
+    let mut config = RedisConfig::default();
+    config.mode = String::from("cluster");
+    config.hosts = String::from("192.168.110.26:6201,192.168.110.26:6202");
+    config.connect = RedisConnect::default();
+    config.connect.dial_timeout = 500;
+    config.connect.read_timeout = 500;
+    config.connect.write_timeout = 500;
+    // config.pool =;
+    let mut redis_client = RedisClientOperation::new(&config);
+    let ret = redis_client.get(&String::from("im:token:100002:24:mobile"));
+    let ret2 = redis_client.set(
+      &String::from("im:token:100002:24:mobile"),
+      &mut String::from(ret.expect("msg")),
+    );
+    assert_eq!(ret2.unwrap(), ());
+  }
+}
