@@ -27,7 +27,8 @@ pub fn read_config_from_yaml(config: &mut Config) -> Result<(), YamlError> {
   fn _parse_config(config: &mut Config, docs: &Vec<Yaml>) -> Option<()> {
     let doc = &docs[0];
 
-    let server_port = doc["server"]["port"].as_i64()? as u16;
+    let poi_server = doc["poiServer"].as_str()?;
+    // let server_port = doc["server"]["port"].as_i64()? as u16;
     let redis_mode = doc["redis"]["mode"].as_str()?;
     let password = if false == doc["redis"]["password"].is_badvalue() {
       doc["redis"]["password"].as_str()?
@@ -44,6 +45,7 @@ pub fn read_config_from_yaml(config: &mut Config) -> Result<(), YamlError> {
     config.redis_config.hosts = String::from(hosts);
     config.redis_config.pass = String::from(password);
     config.redis_config.mode = String::from(redis_mode);
+    config.poi_server = String::from(poi_server);
     // config.port = server_port;
     Some(())
   }

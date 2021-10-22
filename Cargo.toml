@@ -37,18 +37,20 @@ flate2 = "1.0"
 http = "0.2"
 http-auth-basic = "0.3.1"
 handlebars = "4"
-hyper = { version = "0.14", features = ["http1", "server", "stream", "tcp"] }
+hyper = { version = "0.14", features = ["http1", "server", "client", "stream", "tcp"] }
 local-ip-address = "0.4.4"
 mime_guess = "2"
 rustls = "0.19"
 tokio = { version = "1", features = ["fs", "rt-multi-thread", "signal", "macros"] }
 tokio-rustls = "0.22"
 toml = "0.5"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1.0.68"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 structopt = { version = "0.3", default-features = false }
 redis = { version = "*", features = [ "cluster"] }
 yaml-rust = "*"
+libc = "0.2.0"
+protobuf = "*"
 
 [dev-dependencies]
 criterion = { version = "0.3", features = ["async_tokio", "html_reports"] }
@@ -59,6 +61,7 @@ lazy_static = "1.4"
 [build-dependencies]
 bindgen = "0.59.0"
 cc = "1.0.70"
+protoc-rust = "2.0"
 
 [profile.release]
 debug = 1

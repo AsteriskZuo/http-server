@@ -1,0 +1,36 @@
+syntax = "proto3";
+import "route_common.proto";
+package cl_route.proto;
+
+option go_package = "../service;service";
+message PoiInfo {
+  uint64 poiID = 1;
+  string poiName = 2;
+  uint64 roadID = 3;
+  GeoPoint entry = 4;
+  uint64 modelID = 5;
+}
+
+message RoutePlanServerParameter {
+  uint32 version = 1;
+  uint32 mode = 2;
+  uint32 policy = 3;
+  bool realTimeTraffic = 4;
+  oneof start {
+    GeoPoint startPoint = 5;
+    PoiInfo startPoi = 6;
+  }
+  oneof end {
+    GeoPoint endPoint = 7;
+    PoiInfo endPoi = 8;
+  }
+  repeated GeoPoint middlePoint = 9;
+  repeated string middlePoiID = 10;
+  uint32 responseMode = 11;
+  uint32 shapeOptimization = 12;
+  string routeIDInNavi = 13;
+  uint32 roadFormForStartPoint = 14;
+  uint32 isYaw = 15;
+  repeated GeoArea avoidAreas = 16;
+  repeated string avoidRoadIDs = 17;
+}

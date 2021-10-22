@@ -1,0 +1,39 @@
+{
+	"guiding":
+	{
+		"zh_cn":
+		{
+			"goback":"往回走",
+			"gostraight":"继续直行",
+			
+			"facility1":"天桥",
+			"facility2":"地下通道",
+			"facility3":"马路",
+			"facility4":"广场",
+			"facility5":"楼梯",
+			"facility6":"台阶",
+			"facility7":"扶梯",
+			"facility8":"直梯",
+			"facility11":"隧道",
+			"facility15":"桥",
+			
+			"direction1":"直行",
+			"direction2":"左前方直行",
+			"direction3":"左转",
+			"direction4":"左后方转",
+			"direction5":"后",
+			"direction6":"右后方转",
+			"direction7":"右转",
+			"direction8":"右前方直行",
+			"direction9":"左后方转",
+			"direction10":"右后方转",
+			
+			"200meterstip":"请继续沿当前道路直行",
+			"beforecrosstip":"前方过马路继续往前走，",
+			"warmtip0":"请遵守交通规则",
+			"warmtip1":"请注意来回车辆",
+			"warmtip2":"一定要等绿灯哦",
+			"warmtip3":"小心转弯车辆"
+		}
+	}
+}

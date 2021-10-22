@@ -107,6 +107,7 @@ pub struct Config {
     pub basic_auth: Option<BasicAuthConfig>,
     pub action: ServerType,
     pub redis_config: RedisConfig,
+    pub poi_server: String,
 }
 
 impl Config {
@@ -160,6 +161,9 @@ impl Config {
             Err(error) => panic!("error: {:?}", error.to_string()),
         }
     }
+    pub fn poi_server(&self) -> String {
+        self.poi_server.clone()
+    }
 }
 
 impl Default for Config {
@@ -181,6 +185,7 @@ impl Default for Config {
             basic_auth: None,
             action: ServerType::FileServices,
             redis_config: Default::default(),
+            poi_server: Default::default(),
         };
         ret.init_redis();
         return ret;
@@ -250,6 +255,7 @@ impl TryFrom<Cli> for Config {
             basic_auth,
             action: ServerType::from(cli_arguments.server_type),
             redis_config: Default::default(),
+            poi_server: Default::default(),
         };
         ret.init_redis();
         return Ok(ret);
@@ -284,6 +290,7 @@ impl TryFrom<ConfigFile> for Config {
             basic_auth: file.basic_auth,
             action: ServerType::FileServices,
             redis_config: Default::default(),
+            poi_server: Default::default(),
         };
         ret.init_redis();
         return Ok(ret);

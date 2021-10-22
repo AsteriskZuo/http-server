@@ -108,7 +108,7 @@ impl RedisClientOperation {
       }
     }
   }
-  pub fn set(&mut self, id: &String, value: &mut RedisValue) -> Result<(), RedisError> {
+  pub fn set(&mut self, id: &String, value: &RedisValue) -> Result<(), RedisError> {
     // let mut ret = self.redis_client_connection.as_ref();
     // let mut ret = Arc::make_mut(&mut self.redis_client_connection);
     let mut grc = self.redis_client_connection.lock().expect("");
@@ -195,7 +195,7 @@ impl RedisClientOperation {
 #[cfg(test)]
 pub mod tests {
   #[test]
-  fn test1() {
+  fn test_redis() {
     use super::*;
     use crate::config::{RedisConfig, RedisConnect};
     let mut config = RedisConfig::default();

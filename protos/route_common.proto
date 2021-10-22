@@ -1,0 +1,20 @@
+syntax = "proto3";
+package cl_route.proto;
+
+option java_package = "com.citylife.route.protocol";
+option go_package = "../service;service";
+
+message GeoPoint {
+    double longitude = 1;
+    double latitude = 2;
+    int32 height = 3;
+    uint32 modelID = 4;
+    int32 floor = 5;
+}
+
+message GeoArea {
+    double minx = 1;
+    double miny = 2;
+    double maxx = 3;
+    double maxy = 4;
+}

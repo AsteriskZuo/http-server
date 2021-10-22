@@ -1,0 +1,70 @@
+syntax = "proto3";
+import "route_common.proto";
+package cl_route.proto;
+
+option java_package = "com.citylife.route.protocol";
+option go_package = "../service;service";
+
+message RoadForm {
+    uint32 fromIndex = 1;
+    uint32 toIndex = 2;
+    uint32 form = 3;
+    uint32 modelID = 4;
+    int32 floor = 5;
+}
+
+message RoadPoint {
+    double longitude = 1;
+    double latitude = 2;
+    int32 height = 3;
+    int32 scale = 4;
+}
+
+message WalkGuidePoint {
+    RoadPoint guidePoint = 1;
+    uint32 inLinkForm = 2;
+    uint32 outLinkForm = 3;
+    uint32 inLinkClass = 4;
+    uint32 outLinkClass = 5;
+    uint32 guideType = 6;
+    uint64 outlinkID = 7;
+    bool light = 8;
+    bool trafficLight = 9;
+    uint32 realNode = 10;
+    uint32 realNodeGroup = 11;
+    uint32 inLinkOrient = 12;
+    uint32 outLinkOrient = 13;
+    uint32 angle = 14;
+    uint32 inLinkLen = 15;
+    uint32 outLinkLen = 16;
+    string inLinkName = 17;
+    string outLinkName = 18;
+}
+
+message RoadDescribe {
+    uint64 routeID = 1;
+    uint32 mode = 2;
+    uint32 policy = 3;
+    uint32 length = 4;
+    uint32 time = 5;
+    uint32 lightCount = 6;
+    uint32 overPassCnt = 7;
+    uint32 underPassCnt = 8;
+    uint32 turningCnt = 9;
+    GeoPoint routeStartPoint = 10;
+    GeoPoint routeEndPoint = 11;
+    uint32 fee = 12;
+}
+
+message Route {
+    RoadDescribe describe = 1;
+    repeated RoadPoint roadPoints = 2;
+    repeated RoadForm roadForms = 3;
+    repeated WalkGuidePoint guidePoints = 4;
+}
+
+message RouteResult {
+    uint32 status = 1;
+    uint32 version = 2;
+    repeated Route routes = 3;
+}

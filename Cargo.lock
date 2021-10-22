@@ -137,7 +137,7 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex",
- "which",
+ "which 3.1.1",
 ]
 
 [[package]]
@@ -720,8 +720,11 @@ dependencies = [
  "http-auth-basic",
  "hyper",
  "lazy_static",
+ "libc",
  "local-ip-address",
  "mime_guess",
+ "protobuf",
+ "protoc-rust",
  "redis",
  "rustls",
  "serde",
@@ -1220,6 +1223,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "protobuf"
+version = "2.25.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23129d50f2c9355ced935fce8a08bd706ee2e7ce2b3b33bf61dace0e379ac63a"
+
+[[package]]
+name = "protobuf-codegen"
+version = "2.25.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ba98ce0dadaa6de1e7f1b6d82a0a73b03e0c049169a167c919d906b0875026c"
+dependencies = [
+ "protobuf",
+]
+
+[[package]]
+name = "protoc"
+version = "2.25.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ace5c4ea0e4b0381eb37837e070182b7ab491445e2d5ea2201d861f2b2f94f82"
+dependencies = [
+ "log",
+ "which 4.2.2",
+]
+
+[[package]]
+name = "protoc-rust"
+version = "2.25.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dea89f44bc43e185497171242ec4f0d3a79f98010a858f45981775a706d60652"
+dependencies = [
+ "protobuf",
+ "protobuf-codegen",
+ "protoc",
+ "tempfile",
+]
+
+[[package]]
 name = "quick-error"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1353,6 +1393,15 @@ name = "regex-syntax"
 version = "0.6.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
+
+[[package]]
+name = "remove_dir_all"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
+dependencies = [
+ "winapi",
+]
 
 [[package]]
 name = "ring"
@@ -1600,6 +1649,20 @@ name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
+
+[[package]]
+name = "tempfile"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dac1c663cfc93810f88aed9b8941d48cabf856a1b111c29a40439018d870eb22"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "rand",
+ "redox_syscall",
+ "remove_dir_all",
+ "winapi",
+]
 
 [[package]]
 name = "termcolor"
@@ -1955,6 +2018,17 @@ version = "3.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d011071ae14a2f6671d0b74080ae0cd8ebf3a6f8c9589a2cd45f23126fe29724"
 dependencies = [
+ "libc",
+]
+
+[[package]]
+name = "which"
+version = "4.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea187a8ef279bc014ec368c27a920da2024d2a711109bfbe3440585d5cf27ad9"
+dependencies = [
+ "either",
+ "lazy_static",
  "libc",
 ]
 

@@ -1,0 +1,27 @@
+syntax = "proto3"; 
+import "route_common.proto";
+
+package cl_route.proto;
+
+option go_package = "../service;service";
+option java_package = "com.citylife.route.protocol";
+
+message RoutePlanClientParameter {
+    uint32 version = 1;
+    uint32 mode = 2;
+    uint32 policy = 3;
+    bool realTimeTraffic = 4;
+    GeoPoint startPoint = 5;
+    GeoPoint endPoint = 6;
+    repeated GeoPoint middlePoint = 7;
+    string startPoiID = 8;
+    string endPoiID = 9;
+    repeated string middlePoiID = 10;
+    uint32 responseMode = 11;
+    uint32 shapeOptimization = 12;
+    string routeIDInNavi = 13;
+    uint32 roadFormForStartPoint = 14;
+    uint32 isYaw = 15;
+    repeated GeoArea avoidAreas = 16;
+    repeated string avoidRoadIDs = 17;
+}

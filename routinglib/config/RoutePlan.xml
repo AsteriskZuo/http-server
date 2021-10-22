@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<System version="1">
+    <CostPolicyFile>config/Walk_CostPolicy.xml</CostPolicyFile>
+    <WalkRouteDataFile>NavigationData/WalkData/OutDoorwalk_20210611134349.dat</WalkRouteDataFile>
+    <WalkRouteIndoorDataFile>NavigationData/WalkData/InDoorwalk_20210611134349.dat</WalkRouteIndoorDataFile>
+    <WalkRouteDataIndexFile>NavigationData/WalkData/OutDoorSearch_20210524190833.dat</WalkRouteDataIndexFile>
+</System>

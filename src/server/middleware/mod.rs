@@ -30,13 +30,13 @@ pub type Result = std::result::Result<(), http::Response<Body>>;
 /// Middleware chain to execute before the main handler digests the
 /// HTTP request. No HTTP response is available at this point.
 pub type MiddlewareBefore =
-    Box<dyn Fn(Request<Body>) -> Pin<Box<dyn Future<Output = Result> + Send + Sync>> + Send + Sync>;
+    Box<dyn Fn(Request<Body>) -> Pin<Box<dyn Future<Output = Result> + Send >> + Send + Sync>;
 
 /// Middleware chain to execute after the main handler digests the
 /// HTTP request. The HTTP response is created by the handler and
 /// consumed by every middleware after chain.
 pub type MiddlewareAfter = Box<
-    dyn Fn(Request<Body>, Response<Body>) -> Pin<Box<dyn Future<Output = Result> + Send + Sync>>
+    dyn Fn(Request<Body>, Response<Body>) -> Pin<Box<dyn Future<Output = Result> + Send >>
         + Send
         + Sync,
 >;

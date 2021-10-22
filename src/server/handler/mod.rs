@@ -29,7 +29,7 @@ use self::file_server::FileServerHandler;
 pub type Handler = Box<
     dyn Fn(
             Arc<Mutex<Request<Body>>>,
-        ) -> Pin<Box<dyn Future<Output = http::Response<Body>> + Send + Sync>>
+        ) -> Pin<Box<dyn Future<Output = http::Response<Body>> + Send >>
         + Send
         + Sync,
 >;

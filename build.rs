@@ -1,10 +1,12 @@
 extern crate bindgen;
 extern crate cc;
+extern crate protoc_rust;
 
 use std::env;
 use std::path::PathBuf;
 
 fn main() {
+    build_proto_file();
     build_route_c();
 }
 
@@ -65,4 +67,18 @@ fn build_route_c() {
         Ok(_) => (),
         Err(_) => panic!("error"),
     }
+}
+
+fn build_proto_file() {
+    protoc_rust::Codegen::new()
+        .out_dir("src/protos")
+        .inputs(&[
+            "protos/route_client_param.proto",
+            "protos/route_common.proto",
+            "protos/route_result.proto",
+            "protos/route_server_param.proto",
+        ])
+        .include("protos")
+        .run()
+        .expect("protoc");
 }

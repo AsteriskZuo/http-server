@@ -3,6 +3,7 @@ mod cli;
 mod config;
 mod server;
 mod utils;
+mod protos;
 
 use anyhow::{Context, Result};
 use std::convert::TryFrom;
