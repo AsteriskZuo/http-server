@@ -152,16 +152,73 @@ impl ApiServer {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::protos::route_client_param::RoutePlanClientParameter;
+  use std::borrow::BorrowMut;
+  use tokio::task;
+
+  use protobuf::{Message, SingularPtrField};
+
+  use crate::{
+    addon::api_server::route_wrapper::RouteWrapper,
+    config::ServerType,
+    protos::{route_client_param::RoutePlanClientParameter, route_common::GeoPoint},
+    utils::error,
+  };
 
   #[test]
   fn test_get_path() {
     use super::*;
-    let config = Arc::new(Config::default());
-    let server = ApiServer::new(config);
-    // let raw_data;
-    let client_params = RoutePlanClientParameter::new();
-    // client_p
-    // server.get_path(raw_data);
+    let mut config = Config::default();
+    config.action = ServerType::ApiServices;
+    let server = Arc::new(ApiServer::new(Arc::from(config)));
+    let mut client_params = RoutePlanClientParameter::new();
+    client_params.mode = 0;
+    client_params.policy = 0;
+    client_params.realTimeTraffic = false;
+    let mut start_point = GeoPoint::new();
+    start_point.longitude = 116.447209f64;
+    start_point.latitude = 39.912554f64;
+    start_point.height = 0i32;
+    // start_point.modelID = 0u32;
+    // start_point.floor = 0i32;
+    let mut end_point = GeoPoint::new();
+    end_point.longitude = 116.452512f64;
+    end_point.latitude = 39.909453999999997f64;
+    end_point.height = 0i32;
+    // end_point.modelID = 0u32;
+    // end_point.floor = 0i32;
+    client_params.startPoint = SingularPtrField::some(start_point);
+    client_params.endPoint = SingularPtrField::some(end_point);
+    let output = client_params.write_to_bytes().expect("output");
+    let output_string = String::from_utf8(output).expect("output_string");
+    task::spawn_blocking(move || {
+      // do some compute-heavy work or call synchronous code
+      let local_server = server.clone();
+      async move {
+        let local_output_string = output_string;
+        let local_local_server = local_server.clone();
+        let encode_data = proto_wrapper::client_to_server_protobuf(
+          &local_output_string,
+          &*local_local_server.services,
+        )
+        .await;
+        match encode_data {
+          Ok(encoded) => {
+            let ret = RouteWrapper::find_path(encoded);
+            // let ret = local_server.get_path(output_string).await;
+            match ret {
+              Ok(content) => {
+                println!("{:?}", content);
+              }
+              Err(error) => {
+                println!("{}", error);
+              }
+            }
+          } //
+          Err(error) => {
+            println!("{}", error);
+          }
+        }
+      }
+    });
   }
 }
