@@ -31,32 +31,6 @@ use serde::Deserialize;
 
 const get_poi_detail: &str = "getPoiDetailByPoiId";
 
-// type PoiDetail struct {
-// 	AddressFloor string `json:"addressFloor"`
-// 	BuildFlag    string `json:"buildFlag"`
-// 	Latitude     string `json:"latitude"`
-// 	Longitude    string `json:"longitude"`
-// 	ModelId      string `json:"modelId"`
-// 	ParentPoiId  string `json:"parentPoiId"`
-// 	PoiId        string `json:"poiId"`
-// 	PoiName      string `json:"poiName"`
-// 	PoiType      string `json:"poiType"`
-// 	RoadId       string `json:"roadId"`
-// 	RoadXEntr    string `json:"roadXEntr"`
-// 	RoadYEntr    string `json:"roadYEntr"`
-// 	WroadId      string `json:"wroadId"`
-// 	WroadXEntr   string `json:"wroadXEntr"`
-// 	WroadYEntr   string `json:"wroadYEntr"`
-// }
-
-// type PoiDetailResponse struct {
-// 	RtnCode string `json:"rtnCode"`
-// 	TraceId string `json:"traceId"`
-// 	Body    struct {
-// 		Data PoiDetail `json:"data"`
-// 	} `json:"body"`
-// }
-
 #[derive(Deserialize, Debug)]
 pub struct PoiDetail  {
 	pub addressFloor :String, //`json:"addressFloor"`
@@ -117,11 +91,6 @@ impl SearchPoiInfo {
       .body(Body::from(json))
       .expect("request poi info");
 
-
-      // let ss = client.request(req) as ResponseFuture<'static + Send + Sync>;
-      // Response;
-      // Result<Response<Body>, Error>
-
     let result = client.request(req).await;
     match result {
       Ok(mut response) => {
@@ -136,7 +105,7 @@ impl SearchPoiInfo {
           Some(result) =>{
             match result {
               Ok(bytes) =>{
-                let mut json = String::from_utf8(bytes.to_vec()).expect("json");
+                let json = String::from_utf8(bytes.to_vec()).expect("json");
                 let json_object = serde_json::from_str::<serde_json::value::Value>(json.as_str()).expect("json_object");
                 let poiDetailResponse = serde_json::from_value::<PoiDetailResponse>(json_object).expect("msg");
                 let data = poiDetailResponse.body.data;
@@ -166,13 +135,27 @@ impl SearchPoiInfo {
 
 #[cfg(test)]
 pub mod tests {
+  use tokio::task;
   #[test]
   fn test_url_post() {
     use super::*;
     let info = SearchPoiInfo {
       url: String::from("http://httpbin.org"),
     };
-    info.search_poi_info(&String::from("id"));
+    task::spawn_blocking(move || {
+      // let local_info = info.clone();
+      async move {
+        let ret =info.search_poi_info(&String::from("id")).await;  
+        match ret {
+          Ok(_) =>{
+            println!("ok");
+          },
+          Err(error) =>{
+            println!("{}", error);
+          },
+        }
+      }      
+    });    
   }
   #[test]
   fn test_json() {

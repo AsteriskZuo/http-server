@@ -1,0 +1,38 @@
+[2021-10-28 10:46:15.336] [daily_logger] [info] 室外Link信息读取完毕！
+[2021-10-28 10:46:16.374] [daily_logger] [info] 室外Node信息读取完毕！
+[2021-10-28 10:46:16.648] [daily_logger] [info] Link信息校验完毕！
+[2021-10-28 10:46:16.888] [daily_logger] [info] Node信息校验完毕！
+[2021-10-28 10:46:16.892] [daily_logger] [info] ID为：100000055的室内Link信息读取完毕！
+[2021-10-28 10:46:16.893] [daily_logger] [critical] 室外节点数据不包含模型100000055的室内外切换点！
+[2021-10-28 10:46:16.893] [daily_logger] [critical] 室外节点数据不包含模型100000055的室内外切换点！
+[2021-10-28 10:46:16.893] [daily_logger] [info] ID为：100000055的室内节点信息读取完毕！
+[2021-10-28 10:46:16.894] [daily_logger] [info] ID为：100000082的室内Link信息读取完毕！
+[2021-10-28 10:46:16.894] [daily_logger] [info] ID为：100000082的室内节点信息读取完毕！
+[2021-10-28 10:46:16.896] [daily_logger] [info] ID为：100001416的室内Link信息读取完毕！
+[2021-10-28 10:46:16.897] [daily_logger] [info] ID为：100001416的室内节点信息读取完毕！
+[2021-10-28 10:46:16.897] [daily_logger] [info] ID为：100001486的室内Link信息读取完毕！
+[2021-10-28 10:46:16.897] [daily_logger] [info] ID为：100001486的室内节点信息读取完毕！
+[2021-10-28 10:46:16.902] [daily_logger] [info] ID为：100001491的室内Link信息读取完毕！
+[2021-10-28 10:46:16.903] [daily_logger] [info] ID为：100001491的室内节点信息读取完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] ID为：100120642的室内Link信息读取完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] ID为：100120642的室内节点信息读取完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Link信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Link信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Link信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Link信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Link信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Link信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Node信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Node信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Node信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Node信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Node信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Node信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Node信息校验完毕！
+[2021-10-28 10:46:16.904] [daily_logger] [info] Node信息校验完毕！
+[2021-10-28 10:46:16.906] [daily_logger] [info] 数据初始化完成！
+[2021-10-28 10:46:16.906] [daily_logger] [info] Init Time consuming is 8995.339385 millisecond.
+
+[2021-10-28 10:46:49.009] [daily_logger] [critical] 未进行数据初始化接口调用，或数据正在装载中！
+[2021-10-28 10:46:49.009] [daily_logger] [info] RoutePlan Time consuming is 1.029160 millisecond.
+

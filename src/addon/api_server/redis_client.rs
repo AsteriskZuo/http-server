@@ -2,9 +2,8 @@ use core::fmt::Debug;
 use core::ops::DerefMut;
 use redis::{
   cluster::ClusterClient, Client, ConnectionAddr, ConnectionInfo, ConnectionLike,
-  RedisConnectionInfo, RedisError,
+  RedisConnectionInfo,
 };
-use std::result::Result;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -108,27 +107,27 @@ impl RedisClientOperation {
       }
     }
   }
-  pub fn set(&mut self, id: &String, value: &RedisValue) -> Result<(), RedisError> {
-    // let mut ret = self.redis_client_connection.as_ref();
-    // let mut ret = Arc::make_mut(&mut self.redis_client_connection);
-    let mut grc = self.redis_client_connection.lock().expect("");
-    let rcc = grc.deref_mut();
-    match rcc {
-      RedisClientConnection::SingleClientConnectionType(conn) => {
-        let key = id;
-        let value = &*value;
-        redis::cmd("SET").arg(&key).arg(&value).query::<()>(conn)
-      }
-      RedisClientConnection::ClusterClientConnectionType(conn) => {
-        let key = id;
-        let value = &*value;
-        redis::cmd("SET").arg(&key).arg(&value).query::<()>(conn)
-      }
-      RedisClientConnection::UnknownClientConnectionType => {
-        panic!("Unknown client type")
-      }
-    }
-  }
+  // pub fn set(&mut self, id: &String, value: &RedisValue) -> Result<(), RedisError> {
+  //   // let mut ret = self.redis_client_connection.as_ref();
+  //   // let mut ret = Arc::make_mut(&mut self.redis_client_connection);
+  //   let mut grc = self.redis_client_connection.lock().expect("");
+  //   let rcc = grc.deref_mut();
+  //   match rcc {
+  //     RedisClientConnection::SingleClientConnectionType(conn) => {
+  //       let key = id;
+  //       let value = &*value;
+  //       redis::cmd("SET").arg(&key).arg(&value).query::<()>(conn)
+  //     }
+  //     RedisClientConnection::ClusterClientConnectionType(conn) => {
+  //       let key = id;
+  //       let value = &*value;
+  //       redis::cmd("SET").arg(&key).arg(&value).query::<()>(conn)
+  //     }
+  //     RedisClientConnection::UnknownClientConnectionType => {
+  //       panic!("Unknown client type")
+  //     }
+  //   }
+  // }
   pub fn get(&mut self, id: &String) -> Option<RedisValue> {
     let mut grc = self.redis_client_connection.lock().expect("");
     let rcc = grc.deref_mut();
@@ -208,10 +207,11 @@ pub mod tests {
     // config.pool =;
     let mut redis_client = RedisClientOperation::new(&config);
     let ret = redis_client.get(&String::from("im:token:100002:24:mobile"));
-    let ret2 = redis_client.set(
-      &String::from("im:token:100002:24:mobile"),
-      &mut String::from(ret.expect("msg")),
-    );
-    assert_eq!(ret2.unwrap(), ());
+    assert_eq!(ret.unwrap(), "");
+    // let ret2 = redis_client.set(
+    //   &String::from("im:token:100002:24:mobile"),
+    //   &mut String::from(ret.expect("msg")),
+    // );
+    // assert_eq!(ret2.unwrap(), ());
   }
 }

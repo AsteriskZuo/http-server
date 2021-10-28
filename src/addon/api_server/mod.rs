@@ -55,7 +55,26 @@ impl<'a> ApiServer {
         }
       }
       Method::POST => {
-        if req_path.contains("/api/v1/navi") {
+        if req_path.contains("/api/v1/navijson") {
+          let orb = request_lock.body_mut().data().await;
+          match orb {
+            Some(result) => match result {
+              Ok(bytes) => {
+                let body_data = String::from_utf8(bytes.to_vec()).expect("body_data");
+                println!("{:?}", body_data);
+                return self.get_path_from_json(body_data).await;
+              }
+              Err(error) => {
+                println!("search_poi_info->{:?}", error);
+                return Err(StatusCode::CONTINUE);
+              }
+            },
+            None => {
+              println!("search_poi_info->None");
+              return Err(StatusCode::CONTINUE);
+            }
+          }
+        } else if req_path.contains("/api/v1/navi") {
           let orb = request_lock.body_mut().data().await;
           match orb {
             Some(result) => match result {
@@ -74,17 +93,6 @@ impl<'a> ApiServer {
               return Err(StatusCode::CONTINUE);
             }
           }
-
-          // let pos = req_path.find('?');
-          // match pos {
-          //   Some(pos) => {
-          //     let data = req_path.split_off(pos + 1);
-          //     return self.get_path(data).await;
-          //   }
-          //   None => {
-          //     return Err(StatusCode::CONTINUE);
-          //   }
-          // }
         } else {
           return Err(StatusCode::CONTINUE);
         }
@@ -125,8 +133,35 @@ impl ApiServer {
     let result = self.services.find_path(raw_data).await;
     match result {
       Ok(ret) => {
-        let mut services_arc = self.services.clone();
-        let services_mut = Arc::make_mut(&mut services_arc);
+        // let mut services_arc = self.services.clone();
+        // let services_mut = Arc::make_mut(&mut services_arc);
+        // let redis_result = services_mut.save_value(&ret.0, &ret.1);
+        // match redis_result {
+        //   Ok(_) => {},
+        //   Err(error) => {
+        //     println!("get_path>ret={}", error);
+        //   }
+        // }
+        Ok(
+          HttpResponseBuilder::new()
+            .header(http::header::CONTENT_TYPE, "text/html")
+            .status(StatusCode::OK)
+            .body(Body::from(ret.1))
+            .expect("Failed to build response"),
+        )
+      }
+      Err(error) => {
+        println!("get_id>ret={}", error);
+        Err(StatusCode::INTERNAL_SERVER_ERROR)
+      }
+    }
+  }
+  async fn get_path_from_json(&self, json_data: String) -> Result<Response<Body>, StatusCode> {
+    let result = self.services.find_path_from_json(json_data).await;
+    match result {
+      Ok(ret) => {
+        // let mut services_arc = self.services.clone();
+        // let services_mut = Arc::make_mut(&mut services_arc);
         // let redis_result = services_mut.save_value(&ret.0, &ret.1);
         // match redis_result {
         //   Ok(_) => {},
@@ -152,8 +187,6 @@ impl ApiServer {
 
 #[cfg(test)]
 pub mod tests {
-  use std::borrow::BorrowMut;
-  use tokio::task;
 
   use protobuf::{Message, SingularPtrField};
 
@@ -161,7 +194,6 @@ pub mod tests {
     addon::api_server::route_wrapper::RouteWrapper,
     config::ServerType,
     protos::{route_client_param::RoutePlanClientParameter, route_common::GeoPoint},
-    utils::error,
   };
 
   #[test]
@@ -190,7 +222,7 @@ pub mod tests {
     client_params.endPoint = SingularPtrField::some(end_point);
     let output = client_params.write_to_bytes().expect("output");
     let output_string = String::from_utf8(output).expect("output_string");
-    task::spawn_blocking(move || {
+    tokio::task::spawn_blocking(move || {
       // do some compute-heavy work or call synchronous code
       let local_server = server.clone();
       async move {

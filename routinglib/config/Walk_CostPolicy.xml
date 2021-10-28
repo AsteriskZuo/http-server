@@ -2,6 +2,9 @@
 <CostPolicy>
     <EstimatedCoefficient>1.0</EstimatedCoefficient>
     <SearchLinkCount>3</SearchLinkCount>
+    <OutDoorLinkSearchDistance>500.0</OutDoorLinkSearchDistance>
+    <InDoorLinkSearchDistance>20.0</InDoorLinkSearchDistance>
+    <InDoorLinkSearchHeightDifference>2.0</InDoorLinkSearchHeightDifference>
     <PowBase>2</PowBase>
 	<SHORTEST_DISTANCE>
 		<COST_ROAD_CLASS>

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <System version="1">
     <CostPolicyFile>config/Walk_CostPolicy.xml</CostPolicyFile>
-    <WalkRouteDataFile>NavigationData/WalkData/OutDoorwalk_20210611134349.dat</WalkRouteDataFile>
-    <WalkRouteIndoorDataFile>NavigationData/WalkData/InDoorwalk_20210611134349.dat</WalkRouteIndoorDataFile>
-    <WalkRouteDataIndexFile>NavigationData/WalkData/OutDoorSearch_20210524190833.dat</WalkRouteDataIndexFile>
+    <WalkRouteDataFile>NavigationData/WalkData/OutDoorWalk_20211008104734.dat</WalkRouteDataFile>
+    <WalkRouteIndoorDataFile>NavigationData/WalkData/InDoorWalk_20211008104725.dat</WalkRouteIndoorDataFile>
+    <WalkRouteIndoorModelGroupDataFile>NavigationData/WalkData/ModelGroup_20211008104725.dat</WalkRouteIndoorModelGroupDataFile>
+    <WalkRouteIndoorVirtualRouteDataFile>NavigationData/WalkData/InDoorvirtual_20210810172850.dat</WalkRouteIndoorVirtualRouteDataFile>
+    <WalkRouteDataIndexFile>NavigationData/WalkData/OutDoorSearch_20210603171501.dat</WalkRouteDataIndexFile>
 </System>

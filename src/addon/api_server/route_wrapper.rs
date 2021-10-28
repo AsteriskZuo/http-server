@@ -1,45 +1,13 @@
+#![allow(unused_assignments)]
+
 use std::error::Error;
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::fmt::Display;
-use std::os::raw;
-use std::os::raw::{c_char, c_int, c_uchar, c_uint, c_void};
+use std::os::raw::{c_char, c_uchar, c_uint};
 
 extern crate libc;
 
 include!(concat!(env!("OUT_DIR"), "/route.rs"));
-
-fn test_cpp_route_function() {
-  unsafe {
-    let mut path = String::from("../wrapper.h\0");
-    let ret2 = init(path.as_ptr() as *const std::os::raw::c_char);
-    println!("ret2={}", ret2);
-    let mut path2 = std::ffi::CString::new("../wrapper.h").expect("sdsd");
-    let ret2 = init(path2.as_ptr());
-
-    let condition = CString::new("sdf").expect("sdf");
-    let conditionSize: c_uint = 3;
-    let result: *mut *mut c_uchar = std::mem::zeroed();
-    let size: *mut c_uint = std::mem::zeroed();
-    let id: *mut *mut c_char = std::mem::zeroed();
-    let id_size: *mut c_uint = std::mem::zeroed();
-    let format: c_uint = 1;
-    let ret3: c_int = findPath(
-      condition.as_ptr() as *const u8,
-      conditionSize,
-      result,
-      size,
-      id,
-      id_size,
-      format,
-    );
-    println!("{:?}", ret3);
-  }
-}
-
-#[test]
-fn test_c() {
-  test_cpp_route_function();
-}
 
 type RouteErrorCode = i32;
 
@@ -69,54 +37,42 @@ impl RouteWrapper {
     }
     return ret;
   }
-  pub fn find_path(condition: String) -> Result<(String, String), RouteError> {
-    let condition = CString::new(condition).expect("condition");
-    let condition_size: c_uint = 3;
+  pub fn find_path(condition: Vec<u8>) -> Result<(String, String), RouteError> {
+    // let ss = condition.as_ptr();
+    // let sss = condition.len();
+
+    // let condition = CString::new(condition).expect("condition");
+    // let condition_size: c_uint = 3;
     let format: c_uint = 1;
     let mut ret = 0;
-    let mut id: String;
-    let mut result;
+    let mut id: String = String::new();
+    let mut result = String::new();
     unsafe {
-      let mut unsafe_result: Vec<c_uchar> = vec![0];
       let mut size = std::mem::zeroed::<c_uint>();
-      let mut unsafe_id: Vec<c_char> = vec![0];
       let mut id_size = std::mem::zeroed::<c_uint>();
-      // let mut id_size_rust = 1;
-      // id_size_rust = *id_size;
-      // std::mem::drop(id_size);
-      let mut result_step1 = unsafe_result.as_mut_ptr();
-      let result_step2 = &mut result_step1 as *mut *mut c_uchar;
+      let mut test_unsafe_result: *mut c_uchar = std::mem::zeroed();
+      std::mem::forget(test_unsafe_result);
+      let mut test_unsafe_id: *mut c_char = std::mem::zeroed();
+      std::mem::forget(test_unsafe_id);
+
       ret = findPath(
         condition.as_ptr() as *const u8,
-        condition_size,
-        result_step2,
+        condition.len() as u32,
+        &mut test_unsafe_result as *mut *mut c_uchar,
         &mut size as *mut _,
-        &mut unsafe_id.as_mut_ptr() as *mut *mut c_char,
+        &mut test_unsafe_id as *mut *mut c_char,
         &mut id_size as *mut _,
         format,
       );
       if 0 != ret {
         return Err(RouteError { code: ret as i32 });
       }
-      //  let sdfsdf = unsafe_id.as_mut_ptr() as *mut u8;
-      //  let length = unsafe_id.len();
-      //  let output = String::from_raw_parts(sdfsdf, length, length);
       id = String::from_raw_parts(
-        unsafe_id.as_mut_ptr() as *mut u8,
-        unsafe_id.len(),
-        unsafe_id.len(),
+        test_unsafe_id as *mut u8,
+        id_size as usize,
+        id_size as usize,
       );
-      result = String::from_raw_parts(
-        unsafe_result.as_mut_ptr() as *mut u8,
-        unsafe_result.len(),
-        unsafe_result.len(),
-      );
-
-      // libc::free(unsafe_id.as_mut_ptr() as *mut c_char as *mut c_void);
-      // libc::free(unsafe_result.as_mut_ptr() as *mut c_uchar as *mut c_void);
-
-      std::mem::drop(unsafe_id);
-      std::mem::drop(unsafe_result);
+      result = String::from_raw_parts(test_unsafe_result as *mut u8, size as usize, size as usize);
     }
     println!("find_path->{}", ret);
     return Ok((id, result));
@@ -130,12 +86,12 @@ pub mod tests {
     use super::*;
     let ret = RouteWrapper::init(String::from("routinglib"));
     println!("test_init->{}", ret);
-    assert_eq!(2, ret);
+    assert_eq!(0, ret);
   }
   #[test]
   fn test_find_path() {
     use super::*;
-    let condition = String::new();
+    let condition = Vec::<u8>::new();
     let ret = RouteWrapper::find_path(condition);
     println!("test_find_path->{:#?}", ret);
   }

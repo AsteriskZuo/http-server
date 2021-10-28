@@ -4,6 +4,7 @@ extern crate protoc_rust;
 
 use std::env;
 use std::path::PathBuf;
+use std::process::Command;
 
 fn main() {
     build_proto_file();
@@ -67,6 +68,18 @@ fn build_route_c() {
         Ok(_) => (),
         Err(_) => panic!("error"),
     }
+    let dest_config_dir =
+        String::from(output_dir.as_os_str().to_str().expect("dest_config_dir"));
+    let dest_config_dir_tmp = "routinglib";
+    let mut params = String::from("cp -Rf ");
+    params += &dest_config_dir_tmp;
+    params += " ";
+    params += output_dir.as_os_str().to_str().expect("out_dir");
+    Command::new("sh")
+    .arg("-c")
+    .arg(params)
+    .output()
+    .expect("copy files is failed.");
 }
 
 fn build_proto_file() {

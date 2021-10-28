@@ -6,9 +6,7 @@ use super::{route_wrapper::RouteWrapper, search_poi::SearchError};
 use crate::config::Config;
 use crate::protos::route_common::GeoPoint;
 use crate::protos::route_server_param::PoiInfo;
-use http::StatusCode;
 use protobuf::SingularPtrField;
-use redis::RedisError;
 use std::{result::Result, sync::Arc};
 
 #[derive(Debug, Default)]
@@ -36,14 +34,13 @@ impl Service {
       },
     }
   }
-  pub fn save_value(&mut self, id: &String, value: &String) -> Result<(), RedisError> {
-    self.redis_client.set(id, value)
-  }
+  // pub fn save_value(&mut self, id: &String, value: &String) -> Result<(), RedisError> {
+  //   self.redis_client.set(id, value)
+  // }
   pub fn get_value(&mut self, id: &String) -> Option<String> {
     self.redis_client.get(id)
   }
   pub async fn get_poi_info(&self, id: &String) -> Result<PoiInfo, SearchError> {
-    self.poi_info.search_poi_info(id);
     let poi_info = self.poi_info.search_poi_info(id).await;
     match poi_info {
       Ok(info) => {
@@ -81,6 +78,26 @@ impl Service {
   }
   pub async fn find_path(&self, data: String) -> Result<(String, String), RouteError> {
     let decode_data = proto_wrapper::client_to_server_protobuf(&data, &self).await;
+    match decode_data {
+      Ok(condition) =>{
+         match RouteWrapper::find_path(condition) {
+           Ok(path)=> {
+            return Ok(path);
+           }, 
+           Err(error) =>{
+              return Err(RouteError { code: error.code});
+           }
+         }
+      }
+      Err(error)=>{
+        println!("{}", error);
+        return Err(RouteError { code: 1});
+      }
+    }
+    // RouteWrapper::find_path(decode_data.expect("msg"))
+  }
+  pub async fn find_path_from_json(&self, data: String) -> Result<(String, String), RouteError> {
+    let decode_data = proto_wrapper::client_json_to_server_protobuf(&data, &self).await;
     match decode_data {
       Ok(condition) =>{
          match RouteWrapper::find_path(condition) {
