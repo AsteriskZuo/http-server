@@ -24,6 +24,10 @@ path = "src/bin/main.rs"
 name = "file_explorer"
 harness = false
 
+[[example]]
+name = "post"
+path = "examples/post.rs"
+
 [features]
 dhat-profiling = ["dhat"]
 

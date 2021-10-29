@@ -58,3 +58,4 @@ Thumbs.db
 # Tests #
 #########
 dhat-heap.json
+/logs/
